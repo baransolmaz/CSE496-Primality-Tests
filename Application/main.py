@@ -48,9 +48,29 @@ class Text_Label:
 
 class Entry_Box:
     def __init__(self, obj, _x_, _y_):
+        validation = obj.window.register(self.only_numbers)
         self.entry_box = Entry(
-            obj.window, background="white", width=20, font=('Helvetica 20 bold'))
+            obj.window, background="white", width=20,validate="key",validatecommand=(validation,'%S'), font=('Helvetica 20 normal'))
         self.entry_box.place(x=_x_,y=_y_,anchor=CENTER)
+        
+        self.submit_button = Button(obj.window, text='Submit', command=self.submit)
+        self.submit_button.place(x=_x_-75,y=_y_+40,anchor=CENTER) 
+        
+        self.clear_button = Button(
+            obj.window, text='Clear', command=self.clear)
+        self.clear_button.place(x=_x_+75, y=_y_+40, anchor=CENTER)
+        
+
+    def only_numbers(self,char):
+        return char.isdigit()
+
+    def submit(self):
+        value=self.entry_box.get()
+        self.entry_box.delete(0,END)
+        print(value)
+        
+    def clear(self):
+        self.entry_box.delete(0,END)
 
 if __name__ == "__main__":
     app=App()
