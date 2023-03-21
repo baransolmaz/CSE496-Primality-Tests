@@ -10,8 +10,13 @@ class App:
         self.window.iconname("Primality Tests")
         self.window.config(background="gray")
         
+        self.input_label = Text_Label(self, "Enter Number",175,25)
+        self.entry_box =Entry_Box(self,175,60)
+
         self.result=Result_Square(self,175,400)
-        self.result.update_result(False)
+        
+        
+        # self.result.update_result(False)
 class Result_Square:
     def __init__(self,obj,center_x,center_y):
         self.canvas = Canvas(obj.window, height=50, width=100,
@@ -32,7 +37,21 @@ class Result_Square:
         self.canvas.delete(self.text)
         self.text = self.canvas.create_text(
             52, 28, fill="black", text=txt, font=('Helvetica 10 bold'), anchor=CENTER)
+   
+   
+class Text_Label:
+    def __init__(self,obj,txt,_x_,_y_):
+        self.label=Label(
+            obj.window, background=obj.window["bg"], text=txt, font=('Helvetica 20 bold'))
+        self.label.place(x=_x_,y=_y_,anchor=CENTER) 
         
+
+class Entry_Box:
+    def __init__(self, obj, _x_, _y_):
+        self.entry_box = Entry(
+            obj.window, background="white", width=20, font=('Helvetica 20 bold'))
+        self.entry_box.place(x=_x_,y=_y_,anchor=CENTER)
+
 if __name__ == "__main__":
     app=App()
     app.window.mainloop()
