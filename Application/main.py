@@ -11,7 +11,7 @@ class App:
         self.window.config(background="gray")
         
         self.result=Result_Square(self,175,400)
-        self.result.update_result(TRUE)
+        self.result.update_result(False)
 class Result_Square:
     def __init__(self,obj,center_x,center_y):
         self.canvas = Canvas(obj.window, height=50, width=100,
