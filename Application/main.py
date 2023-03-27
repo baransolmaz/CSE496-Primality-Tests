@@ -1,5 +1,6 @@
 import math
 from tkinter import *
+import random
 
 class App:
     def __init__(self):
@@ -17,7 +18,7 @@ class App:
         self.divisor_text = Text_Label(self, "", 175,460)
         
         self.entry_box =Entry_Box(self,175,60)
-        # self.result.update_result(False)
+
 class Result_Square:
     def __init__(self,obj,center_x,center_y):
         self.canvas = Canvas(obj.window, height=50, width=100,
@@ -48,7 +49,6 @@ class Text_Label:
     def update_text(self,txt):
         self.label.config(text=txt)
         
-
 class Entry_Box:
     def __init__(self, obj, _x_, _y_):
         validation = obj.window.register(self.only_numbers)
@@ -74,7 +74,11 @@ class Entry_Box:
             return
             
         obj.previous_number.update_text(value)
-        result, divisor = isPrime(int(value))
+        
+        result, divisor = isPrime_fermats_method(int(value), int(value)//3)
+        #result, divisor = isPrime_optimized_school_method(int(value))
+        
+        
         obj.result_box.update_result(result)
         obj.divisor_text.update_text("")
         if result==False:
@@ -87,17 +91,54 @@ class Entry_Box:
         obj.divisor_text.update_text("")
         obj.result_box.update_result(-1)
 
-
-def isPrime(n):
+def isPrime_optimized_school_method(number):
     # Corner case
-    if (n <= 1):
-        return False,n
+    if (number <= 1):
+        return False,number
   
     # Check from 2 to square root of n
-    for i in range(2, int(math.sqrt(n)) + 1):
-        if (n % i == 0):
+    for i in range(2, int(math.sqrt(number)) + 1):
+        if (number % i == 0):
             return False,i
     return True,-1
+
+# If n is prime, then always returns true,
+# If n is composite than returns false with
+# high probability Higher value of k increases
+# probability of correct result
+def isPrime_fermats_method(number,k):
+    # Corner cases
+    if number == 1 or number == 4:
+        return False, math.sqrt(number)
+    elif number == 2 or number == 3:
+        return True, -1
+
+    else:  # Try k times
+        for i in range(k):
+
+            # Pick a random number in [2..number-2]
+            rand = random.randint(2, number - 2)
+
+            # Fermat's little theorem
+            if power_fermat(rand, number - 1, number) != 1:
+                return False , rand
+
+    return True , -1
+
+
+def power_fermat(rand, n, p):
+    res = 1
+    rand = rand % p  # Update 'a' if 'a' >= p
+
+    while n > 0:
+        if n % 2:  # If n is odd, multiply 'a' with result
+            res = (res * rand) % p
+            n = n - 1
+        else:
+            rand = (rand ** 2) % p
+            n = n // 2 
+
+    return res % p
 
 
 if __name__ == "__main__":
