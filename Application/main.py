@@ -47,8 +47,7 @@ class Result_Square:
         self.text = self.canvas.create_text(
             52,28, fill="black", text="??", font=('Helvetica 10 bold'))
         self.canvas.place(x=center_x,y=center_y,anchor=CENTER)
-        
-    
+           
     def get_result(self,bool):
         if bool==True:
             return "green","Prime"
