@@ -2,7 +2,7 @@ import math
 from tkinter import *
 import random
 from threading import Thread
-from time import sleep
+from time import sleep,time
 
 isCarmichael = False
 finishedCounter = 0
@@ -21,7 +21,7 @@ class App:
         self.previous_number = Text_Label(self,"",175,300,30)
         
         self.result_box=Result_Square(self,175,400)
-        self.divisor_text = Text_Label(self, "", 175,460)
+        self.time_text = Text_Label(self, "", 175,460)
         
         self.check_box = Check_Box(self,175,135)
         self.entry_box =Entry_Box(self,175,60)
@@ -40,7 +40,6 @@ class Check_Box:
 
     def getSelection(self):
         return self.var.get()
-
 
 class Result_Square:
     def __init__(self,obj,center_x,center_y):
@@ -68,11 +67,10 @@ class Text_Label:
             obj.window, background=obj.window["bg"], text=txt, font=('Helvetica '+str(font)+' bold'))
         self.label.place(x=_x_,y=_y_,anchor=CENTER)
 
-    def update_text(self, txt):
-        if len(txt) >= 15:
+    def update_text(self, txt,type=0):
+        if len(txt) >= 15 and type==0:
             txt = "~"+txt[0]+"."+txt[1:5]+" * 10^"+str(len(txt)-1)
         self.label.config(text=txt, font=('Helvetica 20 bold'))
-
 
 class Entry_Box:
     def __init__(self, obj, _x_, _y_):
@@ -99,9 +97,10 @@ class Entry_Box:
             return
 
         obj.previous_number.update_text(value)
-
         type = obj.check_box.getSelection()
-        iteration = 5
+        iteration = 1
+        
+        start_time=time()
         if type == -1:
             result = isPrime_optimized_basic_method(int(value))
         elif type == 0:
@@ -112,26 +111,16 @@ class Entry_Box:
             result = -1
 
         obj.result_box.update_result(result)
-        # if result==False:
-        # str=self.getText(type,divisor,int(value))
-        # obj.divisor_text.update_text(str)
+        end_time=time()
+        obj.time_text.update_text("Total Time: "+ f'{(end_time-start_time):.2f}'+" sn",1)
         print(value)
         clearGlobals()
-        
-    def getText(self,type,divisor,number=-1):
-        if  type== 0:
-            return "Divisible by "+str(divisor)
-        elif type==1:
-            return str(divisor)+"^"+str(number-1)+" %"+str(number)+ "!= 1"
-        else:
-            return ""
-            
+                    
     def clear(self,obj):
         self.entry_box.delete(0,END)
         obj.previous_number.update_text("")
-        # obj.divisor_text.update_text("")
+        obj.time_text.update_text("")
         obj.result_box.update_result(-1)
-
 
 def isPrime_optimized_basic_method(number):
     # Corner case
@@ -188,7 +177,6 @@ def isPrime_miller_rabin(number, k):
 
     return True, -1
 
-
 def millerTest(d, number):
 
     # Pick a random number in [2..n-2]
@@ -232,7 +220,6 @@ def power(rand, n, number):
 
     return res % number
 
-
 def isCarmichaelNumber(n):
     digit = int(math.log10(n))+1
     print(digit)
@@ -248,8 +235,8 @@ def isCarmichaelNumber(n):
         return checkCarmichael_greater100digit(n)
 
 def checkCarmichael_less25digit(n):
-    main_root = int(math.sqrt(n))+1         # 13-6
-    root_4 = int(math.sqrt(main_root))+1    # 7-3
+    main_root = int(math.sqrt(n))+1         # 13-7
+    root_4 = int(math.sqrt(main_root))+1    # 7-4
     root_8 = int(math.sqrt(root_4))+1       # 4-2
 
     print("2nd: ", main_root, "D: ", int(math.log10(main_root))+1)
@@ -257,19 +244,24 @@ def checkCarmichael_less25digit(n):
     print("8th: ", root_8, "D: ", int(math.log10(root_8))+1)
 
     rand_start = random.randint(10,root_8)
-    rand_end_8 = random.randint(10,root_8*10)
+    rand_end_8 = random.randint(1,root_8)
 
     start = (main_root)-(root_4+root_8)*rand_start
-    end = start+(root_8*root_4)-(root_8*rand_end_8)
+    interval = main_root- (root_8*root_4)-((root_8+root_4)*rand_end_8)
+    while math.log10(interval)+1>9:
+        interval= interval//10
+        
+    end = start+interval
     
     if start % 2 == 0:
         start -= 1
-
+        interval += 1
+        
     if end % 2 == 0:
         end += 1
-
-    interval = end-start
-    thread_num =15
+        interval += 1
+        
+    thread_num =10
     print("S: ", start, " E: ", end)
 
     extras = interval % thread_num
@@ -284,11 +276,9 @@ def checkCarmichael_less25digit(n):
             thread_interval += extras
 
     for i in range(thread_num):
-        if getIsCarm():
-            thread_num = i
-            break
         thread_list[i].start()
         removeFinished()
+        sleep(0.01)
 
     for i in range(thread_num):
         thread_list[i].join()
@@ -308,19 +298,25 @@ def checkCarmichael_less50digit(n):
     print("16th: ", root_16, "D: ", int(math.log10(root_16))+1)
 
     rand_start = random.randint(10, root_16)
-    rand_end_16 = random.randint(10, root_16*10)
+    rand_end_16 = random.randint(1, root_16)
 
     start = main_root-(root_4+root_8+root_16)*rand_start
-    end = start+(root_16*root_8)-(root_16*rand_end_16)
+    interval = main_root - (root_8*root_4*root_16)-((root_8+root_4+root_16)*rand_end_16)
+
+    while math.log10(interval)+1 > 9:
+        interval = interval//10
+
+    end = start+interval
 
     if start % 2 == 0:
         start -= 1
+        interval+=1
 
     if end % 2 == 0:
         end += 1
+        interval+=1
 
-    interval = end-start
-    thread_num = 30
+    thread_num = 20
     print("S: ", start, " E: ", end)
 
     extras = interval % thread_num
@@ -340,8 +336,8 @@ def checkCarmichael_less50digit(n):
             thread_num = i
             break
         thread_list[i].start()
-        sleep(0.05)
         removeFinished()
+        sleep(0.05)
 
     for i in range(thread_num):
         thread_list[i].join()
@@ -363,18 +359,24 @@ def checkCarmichael_less100digit(n):
     print("32th: ", root_32, "D: ", int(math.log10(root_32))+1)
     
     rand_start = random.randint(10, root_32)
-    rand_end_32 = random.randint(10, root_32*10)
+    rand_end_32 = random.randint(1, root_32)
 
     start = main_root-((root_4+root_8+root_16+root_32)*rand_start)
-    end = start+(root_32*root_16)-(rand_end_32*root_32)
+    interval = main_root - (root_8*root_4*root_16*root_32) -((root_8+root_4+root_16+root_32)*rand_end_32)
+    
+    while math.log10(interval)+1 > 9:
+        interval = interval//10
+
+    end = start+interval
 
     if start % 2 == 0:
         start -= 1
+        interval += 1
 
     if end % 2 == 0:
         end += 1
-
-    interval = end-start
+        interval += 1
+        
     thread_num = 50
     print("S: ", start, " E: ", end)
 
@@ -395,7 +397,7 @@ def checkCarmichael_less100digit(n):
             thread_num = i
             break
         thread_list[i].start()
-        sleep(0.05)
+        sleep(0.02)
         removeFinished()
 
     for i in range(thread_num):
@@ -420,18 +422,24 @@ def checkCarmichael_greater100digit(n):
     print("64th: ", root_64, "D: ", int(math.log10(root_64))+1)
     
     rand_start = random.randint(10, root_64)
-    rand_end_64 = random.randint(10, root_64*10)
+    rand_end_64 = random.randint(1, root_64)
 
     start = main_root-(root_4+root_8+root_16+root_32+root_64)*rand_start
-    end = start+(root_32*root_64)-(rand_end_64*root_64)
+    interval = main_root-(root_8*root_4*root_16*root_32*root_64)-((root_8+root_4+root_16+root_32+root_64)*rand_end_64)
+
+    while math.log10(interval)+1 > 9:
+        interval = interval//10
+
+    end = start+interval
 
     if start % 2 == 0:
         start -= 1
+        interval += 1
 
     if end % 2 == 0:
         end += 1
-
-    interval = end-start
+        interval += 1
+        
     thread_num = 50
     print("S: ", start, " E: ", end)
 
@@ -453,8 +461,10 @@ def checkCarmichael_greater100digit(n):
             thread_num = i
             break
         thread_list[i].start()
-        sleep(0.05)
+        sleep(0.2)
         removeFinished()
+        if i%7==0:
+            sleep(1)
 
     for i in range(thread_num):
         thread_list[i].join()
@@ -472,6 +482,8 @@ def partial_carmicheal_control(index:int,number: int, start: int, end: int):
         end -=1
         
     for k in range(start,end, 2):
+        if k%3==0 or k%5==0 or k%7==0:
+            continue
         if getIsCarm():
             break
         if math.gcd(number, k) != 1:
@@ -481,7 +493,6 @@ def partial_carmicheal_control(index:int,number: int, start: int, end: int):
     addFinished(index)
     print("Bitti: ",index)
     return
-
 
 def getIsCarm():
     global isCarmichael
@@ -526,9 +537,12 @@ if __name__ == "__main__":
     app = App()
     app.window.mainloop()
     # 1000000016531 -13
-    # 1000000000000000035000061 -25
+    # 10000000000283 -14
+    # 26862493078871893 -17 Carmichael
     # 9378381824836249332547441 -25
+    # 10000000000000000127995327 -26
     # 33452526613163807108170062053440751665152000000001 -50
-    # 6231720984236661927862601680191594334327223260139907210971108379566305783259160955632448191195213287 -100
+    # 102031405123416071809152453627382938465749676859789 -51
     # 9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999966671 -100
-    # 44531863691195734177338197455569767193298247502066806595979646595136492027235782814594845492097865682056265398300200700471798687479590613927231636475675017034786471249164892858870830712052808191802867
+    # 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003469 -101
+    # 44531863691195734177338197455569767193298247502066806595979646595136492027235782814594845492097865682056265398300200700471798687479590613927231636475675017034786471249164892858870830712052808191802867 -200
